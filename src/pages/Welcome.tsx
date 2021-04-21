@@ -9,7 +9,6 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { ScreenProps } from "react-native-screens";
 
 import wateringImage from "../assets/watering.png";
 import { Button } from "../components/Button";
