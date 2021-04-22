@@ -1,3 +1,4 @@
+import { useNavigation } from "@react-navigation/core";
 import Constants from "expo-constants";
 import React, { useEffect, useState } from "react";
 import {
@@ -13,6 +14,7 @@ import { EnvironmentButton } from "../components/EnvironmentButton";
 import { Header } from "../components/Header";
 import { Loading } from "../components/Loading";
 import { PlantCardPrimary } from "../components/PlantCardPrimary";
+import { PlantProps } from "../libs/storage";
 import { api } from "../services/api";
 import colors from "../styles/colors";
 import fonts from "../styles/fonts";
@@ -20,19 +22,6 @@ import fonts from "../styles/fonts";
 interface EnvironmentProps {
   key: string;
   title: string;
-}
-
-interface PlantProps {
-  id: string;
-  name: string;
-  about: string;
-  water_tips: string;
-  photo: string;
-  environments: string[];
-  frequency: {
-    times: string;
-    repeat_every: string;
-  };
 }
 
 export function PlantSelect() {
@@ -44,6 +33,8 @@ export function PlantSelect() {
 
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
+
+  const { navigate } = useNavigation();
 
   useEffect(() => {
     async function fetchEnvironments() {
@@ -106,6 +97,9 @@ export function PlantSelect() {
     setPage((oldPage) => oldPage + 1);
     fetchPlants();
   }
+  function handlePlantSelect(plant: PlantProps) {
+    navigate("PlantSave", { plant });
+  }
 
   if (isLoading) {
     return <Loading />;
@@ -125,6 +119,7 @@ export function PlantSelect() {
           contentContainerStyle={styles.filters}
           data={environments}
           horizontal
+          keyExtractor={({ key }) => String(key)}
           renderItem={({ item }) => (
             <EnvironmentButton
               isActive={selectedEnvironment === item.key}
@@ -140,6 +135,7 @@ export function PlantSelect() {
       <FlatList
         contentContainerStyle={styles.data}
         data={filteredPlants}
+        keyExtractor={({ id }) => String(id)}
         ListFooterComponent={
           isLoadingMore ? (
             <ActivityIndicator color={colors.green} size={25} />
@@ -151,7 +147,11 @@ export function PlantSelect() {
         onEndReached={({ distanceFromEnd }) => handleLoadMore(distanceFromEnd)}
         onEndReachedThreshold={0.1}
         renderItem={({ item }) => (
-          <PlantCardPrimary key={item.name} data={item} />
+          <PlantCardPrimary
+            onPress={() => handlePlantSelect(item)}
+            key={item.name}
+            data={item}
+          />
         )}
         showsVerticalScrollIndicator={false}
       />

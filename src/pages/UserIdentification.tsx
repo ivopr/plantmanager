@@ -1,6 +1,8 @@
+import { useAsyncStorage } from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/core";
 import React, { useState } from "react";
 import {
+  Alert,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -20,6 +22,7 @@ export function UserIdentification() {
   const [name, setName] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const { navigate } = useNavigation();
+  const { setItem } = useAsyncStorage("@plantmanager:user");
 
   function handleInputBlur() {
     setIsFocused(false);
@@ -27,6 +30,26 @@ export function UserIdentification() {
 
   function handleInputFocus() {
     setIsFocused(true);
+  }
+
+  async function handleSubmit() {
+    if (!name) {
+      return Alert.alert("Ei! Assim eu não sei como te chamar");
+    }
+
+    try {
+      await setItem(name);
+
+      navigate("Confirmation", {
+        title: "Prontinho!",
+        subtitle: "Agora vamos cuidar muito bem das suas planinhas.",
+        icon: "smile",
+        buttonTitle: "Confirmar",
+        nextScreen: "PlantSelect",
+      });
+    } catch {
+      Alert.alert("Não foi possível salvar seu nome!");
+    }
   }
 
   return (
@@ -48,6 +71,7 @@ export function UserIdentification() {
                 onBlur={handleInputBlur}
                 onChangeText={setName}
                 onFocus={handleInputFocus}
+                placeholder="Como eu posso te chamar?"
                 style={[
                   styles.input,
                   (isFocused || !!name) && styles.inputFocused,
@@ -56,8 +80,8 @@ export function UserIdentification() {
               />
 
               <Button
-                disabled={!name.length}
-                onPress={() => navigate("Confirmation")}
+                disabled={!name}
+                onPress={handleSubmit}
                 style={styles.button}
               >
                 <Text style={styles.confirm}>Confirmar</Text>
@@ -101,12 +125,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   input: {
-    borderBottomWidth: 1,
+    borderBottomWidth: 2,
     borderColor: colors.gray,
     color: colors.heading,
     fontSize: 18,
     marginTop: 24,
-    padding: 10,
+    padding: 2.5,
     textAlign: "center",
     width: "100%",
   },
