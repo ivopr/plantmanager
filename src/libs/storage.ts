@@ -58,10 +58,11 @@ export async function LoadPlantFromStorage(): Promise<PlantProps[]> {
           "HH:mm"
         ),
       }))
-      .sort(
-        (a, b) =>
-          Math.floor(new Date(a.dateTimeNotification).getTime() / 1000) -
-          Math.floor(new Date(b.dateTimeNotification).getTime() / 1000)
+      .sort((a, b) =>
+        Math.floor(
+          new Date(a.dateTimeNotification).getTime() / 1000 -
+            Math.floor(new Date(b.dateTimeNotification).getTime() / 1000)
+        )
       );
 
     return plantsSorted;

@@ -1,3 +1,4 @@
+import { MaterialIcons } from "@expo/vector-icons";
 import { formatDistance } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import React, { useEffect, useState } from "react";
@@ -19,26 +20,29 @@ export function MyPlants() {
   const [nextUp, setNextUp] = useState<string>();
 
   useEffect(() => {
+    async function getPlants() {
+      setIsLoading(true);
+
+      const storagedPlants = await LoadPlantFromStorage();
+
+      if (storagedPlants.length > 0) {
+        setNextUp(`Regue a sua ${
+          storagedPlants[0].name
+        } daqui a ${formatDistance(
+          new Date(storagedPlants[0].dateTimeNotification).getTime(),
+          new Date().getTime(),
+          { locale: ptBR }
+        )}
+      `);
+      }
+
+      setPlants(storagedPlants);
+
+      setIsLoading(false);
+    }
+
     getPlants();
   }, []);
-
-  async function getPlants() {
-    setIsLoading(true);
-
-    await LoadPlantFromStorage().then((storagedPlants) => {
-      setNextUp(`Não esqueça de regar a ${
-        storagedPlants[0].name
-      } daqui a ${formatDistance(
-        new Date(storagedPlants[0].dateTimeNotification).getTime(),
-        new Date().getTime(),
-        { locale: ptBR }
-      )}
-      `);
-      setPlants(storagedPlants);
-    });
-
-    setIsLoading(false);
-  }
 
   if (isLoading) {
     return <Loading />;
@@ -49,17 +53,40 @@ export function MyPlants() {
       <View style={styles.content}>
         <Header />
 
-        <View style={styles.spotlight}>
-          <Image source={waterdropImage} style={styles.spotlightImage} />
-          <Text style={styles.spotlightText}>{nextUp}</Text>
-        </View>
+        {nextUp ? (
+          <View style={styles.spotlight}>
+            <Image source={waterdropImage} style={styles.spotlightImage} />
+            <Text style={styles.spotlightText}>{nextUp}</Text>
+          </View>
+        ) : (
+          <View style={[styles.spotlight, styles.spotlightNoPlants]}>
+            <MaterialIcons color={colors.red_dark} name="warning" size={50} />
+            <Text style={[styles.spotlightText, styles.spotlightTextWarning]}>
+              Oops... Parece que você ainda não tem uma plantinha.
+            </Text>
+          </View>
+        )}
 
         <View style={styles.plants}>
           <Text style={styles.plantsTitle}>Próximas Regadas</Text>
 
           <FlatList
             data={plants}
-            keyExtractor={(item) => item.id}
+            ListEmptyComponent={() => (
+              <View style={[styles.spotlight, styles.spotlightListEmpty]}>
+                <MaterialIcons
+                  color={colors.green_dark}
+                  name="arrow-downward"
+                  size={50}
+                />
+                <Text
+                  style={[styles.spotlightText, styles.spotlightTextEmptyList]}
+                >
+                  Adicione agora mesmo uma nova plantinha cuidarmos.
+                </Text>
+              </View>
+            )}
+            keyExtractor={(item) => String(item.id)}
             renderItem={({ item }) => <PlantCardSecondary data={item} />}
             showsVerticalScrollIndicator={false}
           />
@@ -105,11 +132,25 @@ const styles = StyleSheet.create({
     height: 60,
     width: 60,
   },
+  spotlightNoPlants: {
+    backgroundColor: colors.red_light,
+  },
+  spotlightListEmpty: {
+    backgroundColor: colors.green_light,
+  },
   spotlightText: {
     color: colors.blue,
     flex: 1,
     fontFamily: fonts.text,
     fontSize: 16,
     paddingLeft: 20,
+  },
+  spotlightTextEmptyList: {
+    color: colors.green,
+    fontFamily: fonts.heading,
+  },
+  spotlightTextWarning: {
+    color: colors.red,
+    fontFamily: fonts.heading,
   },
 });
