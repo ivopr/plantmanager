@@ -1,6 +1,7 @@
 import { Entypo } from "@expo/vector-icons";
+import { useAsyncStorage } from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/core";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Image,
   Dimensions,
@@ -12,11 +13,31 @@ import {
 
 import wateringImage from "../assets/watering.png";
 import { Button } from "../components/Button";
+import { Loading } from "../components/Loading";
 import colors from "../styles/colors";
 import fonts from "../styles/fonts";
 
 export function Welcome() {
   const { navigate } = useNavigation();
+  const { getItem } = useAsyncStorage("@plantmanager:user");
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function getName() {
+      await getItem().then((username) => {
+        if (username) {
+          navigate("Tab");
+        }
+        setIsLoading(false);
+      });
+    }
+
+    getName();
+  }, []);
+
+  if (isLoading) {
+    return <Loading />;
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -61,7 +82,6 @@ const styles = StyleSheet.create({
     color: colors.heading,
     fontFamily: fonts.heading,
     fontSize: 28,
-    fontWeight: "bold",
     marginTop: 38,
     textAlign: "center",
   },
