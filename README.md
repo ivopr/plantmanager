@@ -1,6 +1,4 @@
-<div style="text-align:center">
-  <img src="assets/icon.png" alt="Plant Manager" height="100">
-</div>
+<img style="display: block;margin-left: auto;margin-right: auto;" src="assets/icon.png" alt="Plant Manager" height="100">
 
 ## Plant Manager
 
